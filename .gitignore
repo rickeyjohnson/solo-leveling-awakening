@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------
+# Unity project: lives in SoloLevelingAwakening/ (created in week 1)
+# ---------------------------------------------------------------
+/SoloLevelingAwakening/[Ll]ibrary/
+/SoloLevelingAwakening/[Tt]emp/
+/SoloLevelingAwakening/[Oo]bj/
+/SoloLevelingAwakening/[Bb]uild/
+/SoloLevelingAwakening/[Bb]uilds/
+/SoloLevelingAwakening/[Ll]ogs/
+/SoloLevelingAwakening/[Uu]ser[Ss]ettings/
+/SoloLevelingAwakening/[Mm]emoryCaptures/
+/SoloLevelingAwakening/[Rr]ecordings/
+/SoloLevelingAwakening/[Aa]ssets/AssetStoreTools*
+/SoloLevelingAwakening/[Aa]ssets/Plugins/Editor/JetBrains*
+/SoloLevelingAwakening/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+/SoloLevelingAwakening/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/SoloLevelingAwakening/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# IDE and generated project files
+.vs/
+.vscode/
+.idea/
+.gradle/
+.consulo/
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity crash and build output
+sysinfo.txt
+mono_crash.*
+crashlytics-build.properties
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Raw source art stays OFF the repo (shared drive) to protect the LFS quota.
+# Export game-ready files into the Unity project instead. See docs/ART_PIPELINE.md.
+/ArtSource/
+*.blend1
+*.blend2
+*.spp
+*.spp.autosave*
+
+# User-study data: participant data never goes in the repo. See docs/TESTING.md.
+/StudyData/
+*.participant.csv
