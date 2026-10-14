@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Game Design Document
+    url: https://github.com/rickeyjohnson/solo-leveling-awakening/blob/main/docs/GDD.md
+    about: Check the GDD before proposing a design change.
