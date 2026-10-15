@@ -3,11 +3,17 @@
 #   1. Enables Git LFS for this repo.
 #   2. Registers Unity's Smart Merge (UnityYAMLMerge) as the merge driver for scenes and prefabs.
 #
-# Run from the repo root:  bash tools/setup-git.sh
+# Run from anywhere:  bash tools/setup-git.sh   (or the full path to this file)
 # On Windows, run it from Git Bash.
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+# Find the repo from this script's location, not the current folder.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if ! REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)"; then
+  echo "This script must stay inside the solo-leveling-awakening repo (tools/setup-git.sh)."
+  exit 1
+fi
+cd "$REPO_ROOT"
 
 # --- 1. Git LFS ------------------------------------------------------------
 if ! git lfs version >/dev/null 2>&1; then
