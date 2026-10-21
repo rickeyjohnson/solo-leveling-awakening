@@ -32,6 +32,8 @@ This turns on Git LFS for the repo and registers Unity's Smart Merge for scenes 
 
 Areas match the issue labels: `combat`, `systems`, `mr-ui`, `ai-levels`, `art-audio`, `research`.
 
+A **spike** is a short experiment with a fixed time limit (usually 3–5 days), done to answer one question before we build the real feature, e.g. "can AR Foundation find the wall on a Quest 3S?" The code is throwaway; the answer goes in `docs/DECISIONS.md`. Spike branches are never merged into `main`.
+
 Keep branches short-lived: merge within a sprint (two weeks). Rebase or merge `main` into your branch at least twice a week.
 
 ## Commits

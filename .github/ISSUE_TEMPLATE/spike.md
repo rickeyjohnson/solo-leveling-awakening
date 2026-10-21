@@ -6,6 +6,8 @@ labels: "type: spike"
 assignees: ""
 ---
 
+> **What's a spike?** A short experiment with a fixed time limit, done to answer one question before we build the real feature. The code is throwaway; the answer is what we keep.
+
 ## Question
 
 <!-- The one thing this spike answers, e.g. "Can AR Foundation find the largest wall reliably in a scanned bedroom?" -->
