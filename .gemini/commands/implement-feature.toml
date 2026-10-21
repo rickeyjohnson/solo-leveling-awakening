@@ -1,0 +1,8 @@
+description = "Implement a feature from spec rules: plan, tests first, code, self-review, PR"
+prompt = '''
+Follow this playbook step by step for Solo Leveling: Awakening (project context is in AGENTS.md):
+
+@{ai/workflows/implement-feature.md}
+
+Input: {{args}}
+'''

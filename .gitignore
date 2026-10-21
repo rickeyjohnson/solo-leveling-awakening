@@ -66,3 +66,9 @@ desktop.ini
 # User-study data: participant data never goes in the repo. See docs/TESTING.md.
 /StudyData/
 *.participant.csv
+
+# Personal AI tool settings (shared ones are committed)
+.claude/settings.local.json
+.env
+.env.*
+*.keystore
