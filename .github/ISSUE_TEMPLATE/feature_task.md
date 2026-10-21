@@ -14,9 +14,13 @@ assignees: ""
 
 <!-- What the player (or the team) gets when this is done. -->
 
+## Spec rules
+
+<!-- Rule IDs from docs/design/ this implements, e.g. CMB-11, CMB-12. No spec yet? Write one first: docs/templates/FEATURE_SPEC.md -->
+
 ## GDD reference
 
-<!-- Section of docs/GDD.md this implements, e.g. "Combat design → Defense: block, parry, dodge". -->
+<!-- Section of docs/GDD.md, e.g. "Combat design → Defense: block, parry, dodge". -->
 
 ## Done when
 
