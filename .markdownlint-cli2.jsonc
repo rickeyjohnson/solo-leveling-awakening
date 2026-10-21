@@ -1,0 +1,18 @@
+// Markdown lint settings for the docs CI job (.github/workflows/docs.yml).
+// Run locally: npx markdownlint-cli2 "**/*.md"
+{
+  "config": {
+    "default": true,
+    // Prose and tables run long; don't hard-wrap.
+    "MD013": false,
+    // Agent, prompt and command files start with front matter or an @import, not a heading.
+    "MD041": false
+  },
+  "gitignore": true,
+  "ignores": [
+    // Generated export of the live GDD: fix issues in the live doc, then re-export.
+    "docs/GDD.md",
+    // Unity project: imported packages and samples ship their own Markdown.
+    "SoloLevelingAwakening/**"
+  ]
+}

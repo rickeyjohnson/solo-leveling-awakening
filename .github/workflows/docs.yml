@@ -1,0 +1,45 @@
+# Markdown lint and an offline link check for every doc, spec and AI playbook.
+# Free: runs on GitHub-hosted runners and never downloads Git LFS files.
+name: Docs
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - ".markdownlint-cli2.jsonc"
+      - ".github/workflows/docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - ".markdownlint-cli2.jsonc"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DavidAnson/markdownlint-cli2-action@v24
+        with:
+          globs: "**/*.md"
+
+  links:
+    name: Links (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Offline: checks that relative links and images point at files that exist.
+      # Web links aren't fetched, so the check never fails because a site is down.
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress --exclude-path SoloLevelingAwakening './**/*.md'
+          fail: true

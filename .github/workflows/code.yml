@@ -1,0 +1,51 @@
+# Repo hygiene and C# formatting. No Unity license needed: Unity builds and tests run locally
+# (see docs/TESTING.md and ai/workflows/weekly-build.md).
+# Free: runs on GitHub-hosted runners and never downloads Git LFS files.
+name: Code
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    name: Repo hygiene
+    runs-on: ubuntu-latest
+    steps:
+      # lfs: false is the default; keep it so CI doesn't spend the team's LFS bandwidth.
+      - uses: actions/checkout@v7
+      - name: Meta files, forbidden files, large files, conflict markers
+        run: bash tools/check-repo.sh
+
+  csharp-format:
+    name: C# formatting
+    runs-on: ubuntu-latest
+    env:
+      CODE_DIR: SoloLevelingAwakening/Assets/_Project
+    steps:
+      - uses: actions/checkout@v7
+      - name: Look for our C# code
+        id: code
+        run: |
+          if [ -d "$CODE_DIR" ] && git ls-files -- "$CODE_DIR" | grep -q '\.cs$'; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No C# in $CODE_DIR yet; skipping."
+          fi
+      - if: steps.code.outputs.found == 'true'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "9.0.x"
+      # Checks whitespace and brace style against .editorconfig. To fix locally:
+      #   dotnet format whitespace SoloLevelingAwakening/Assets/_Project --folder
+      - if: steps.code.outputs.found == 'true'
+        name: dotnet format (whitespace)
+        run: dotnet format whitespace "$CODE_DIR" --folder --verify-no-changes --verbosity minimal
