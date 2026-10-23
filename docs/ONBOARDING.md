@@ -90,3 +90,16 @@ The team starts with no VR or Unity experience, so the first four weeks are most
 - Design questions: comment on the live GDD, or open a `type: task` issue.
 - Tech questions: the team chat, then a GitHub Discussion if it's worth keeping.
 - Blocked for more than a day: tell the producer at the next check-in.
+
+## 9. AI assistants (optional)
+
+The repo is set up for **Claude Code**, **Gemini CLI**, **GitHub Copilot** and **ChatGPT**. They all read the same context ([AGENTS.md](../AGENTS.md)) and the same playbooks in [`ai/`](../ai/README.md), so you get the same rules whichever one you use.
+
+| Tool | Setup |
+| --- | --- |
+| Claude Code | Run `claude` in the repo. It loads `CLAUDE.md`, the agents in `.claude/agents/` and the `/` commands in `.claude/commands/` |
+| Gemini CLI | Run `gemini` in the repo. It loads `GEMINI.md` and the commands in `.gemini/commands/` (`/role:combat`, `/review:unity` ...) |
+| Copilot (VS Code or Rider) | Open the repo. Instructions load automatically; pick an agent (e.g. **Combat engineer**) or type `/` for prompts |
+| ChatGPT | Make a Project and follow [ai/chat/PROJECT_INSTRUCTIONS.md](../ai/chat/PROJECT_INSTRUCTIONS.md) |
+
+Read the [team rules for using AI](../ai/README.md#team-rules-for-using-ai) before you start.

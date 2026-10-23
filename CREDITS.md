@@ -10,7 +10,7 @@ Every model, texture, sound, font or piece of music we didn't make goes here, **
 
 | Asset | Author | Source | License | Used for | Added by |
 | --- | --- | --- | --- | --- | --- |
-| *example:* LowPoly Animated Monsters | Quaternius | https://quaternius.itch.io/lowpoly-animated-monsters | CC0 | Skeleton enemies | — |
+| *example:* LowPoly Animated Monsters | Quaternius | <https://quaternius.itch.io/lowpoly-animated-monsters> | CC0 | Skeleton enemies | — |
 
 Common sources and their terms:
 

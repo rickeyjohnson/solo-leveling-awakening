@@ -1,0 +1,13 @@
+description = "Unity C# code review of the current branch or a given diff"
+prompt = '''
+Review a change for Solo Leveling: Awakening using this checklist. Review only; don't edit files.
+
+@{ai/reviews/unity-code-review.md}
+
+Change to review: {{args}}
+If nothing is given above, review the current branch against main:
+
+!{git diff main...HEAD}
+
+Open the cited rules in docs/design/ to check numbers. Report in the checklist's format, most severe first, and say plainly if there are no problems.
+'''

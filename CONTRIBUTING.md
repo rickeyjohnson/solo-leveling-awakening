@@ -4,7 +4,7 @@ Five people, one Unity project, binary files everywhere. These rules keep us fro
 
 ## The short version
 
-1. One issue per task, assigned to one person, in a milestone.
+1. One issue per task, assigned to one person, in a milestone. Cite the spec rules it implements (`CMB-9`).
 2. One branch per issue, off `main`.
 3. Open a pull request early (draft is fine). One teammate reviews before merge.
 4. **Test on the headset before you ask for review.**
@@ -32,22 +32,26 @@ This turns on Git LFS for the repo and registers Unity's Smart Merge for scenes 
 
 Areas match the issue labels: `combat`, `systems`, `mr-ui`, `ai-levels`, `art-audio`, `research`.
 
+A **spike** is a short experiment with a fixed time limit (usually 3–5 days), done to answer one question before we build the real feature, e.g. "can AR Foundation find the wall on a Quest 3S?" The code is throwaway; the answer goes in `docs/DECISIONS.md`. Spike branches are never merged into `main`.
+
 Keep branches short-lived: merge within a sprint (two weeks). Rebase or merge `main` into your branch at least twice a week.
 
 ## Commits
 
 - Imperative mood, under 72 characters: `Add parry window scaling from PER`.
 - One logical change per commit. Don't mix a scene edit with a script refactor.
-- Reference the issue in the body: `Closes #42`.
+- Reference the issue and the spec rules in the body: `Closes #42`, `Implements CMB-11, CMB-12`.
 
 ## Pull requests
 
-1. Fill in the template (it asks what changed, how you tested it, and on which headset).
-2. Attach a short clip or screenshot for anything visual.
-3. Request one reviewer. The reviewer runs the branch on a headset if it touches gameplay.
-4. Squash-merge into `main`. Delete the branch.
+1. Run `bash tools/check-repo.sh` before you push. It runs the same hygiene checks as CI.
+2. Fill in the template (it asks what changed, how you tested it, and on which headset).
+3. Attach a short clip or screenshot for anything visual.
+4. CI must be green: **Docs** (Markdown lint, links) and **Code** (repo hygiene, C# formatting). Fix formatting with `dotnet format whitespace SoloLevelingAwakening/Assets/_Project --folder`.
+5. Request one reviewer. The reviewer runs the branch on a headset if it touches gameplay. An AI review ([ai/README.md](ai/README.md)) is a good first pass, never a replacement.
+6. Squash-merge into `main`. Delete the branch.
 
-**Definition of done**
+### Definition of done
 
 - [ ] Works in a Quest build, not only in the editor
 - [ ] Frame rate still at 72 Hz or better in the affected scene

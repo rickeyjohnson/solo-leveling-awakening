@@ -1,0 +1,13 @@
+description = "Check the GDD, specs and ScriptableObject defaults agree"
+prompt = '''
+Review a change for Solo Leveling: Awakening using this checklist. Review only; don't edit files.
+
+@{ai/reviews/gdd-consistency.md}
+
+Change to review: {{args}}
+If nothing is given above, review the current branch against main:
+
+!{git diff main...HEAD}
+
+Open the cited rules in docs/design/ to check numbers. Report in the checklist's format, most severe first, and say plainly if there are no problems.
+'''

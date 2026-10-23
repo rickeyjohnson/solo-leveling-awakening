@@ -29,6 +29,7 @@ Roles and rituals: [docs/TEAM.md](docs/TEAM.md).
 | Doc | What it covers |
 | --- | --- |
 | [Game Design Document](docs/GDD.md) | Everything about the game: vision, systems, levels, enemies, UI, art, audio, plan. Export of the live team doc |
+| [Design specs](docs/design/README.md) | One spec per system with numbered, testable rules (`CMB-9`, `QST-10` ...). Build from these |
 | [Onboarding](docs/ONBOARDING.md) | Accounts, installs, headset setup, creating the Unity project, the 4-week learning path |
 | [Contributing](CONTRIBUTING.md) | Branches, commits, pull requests, scene ownership, Git LFS |
 | [Architecture](docs/ARCHITECTURE.md) | Packages, code layers, folders, scenes, game states, events, save data |
@@ -39,6 +40,7 @@ Roles and rituals: [docs/TEAM.md](docs/TEAM.md).
 | [Roadmap](docs/ROADMAP.md) | Phases, dates, milestones, scope |
 | [Decisions](docs/DECISIONS.md) | Why we chose what we chose |
 | [Credits](CREDITS.md) | Third-party assets and their licenses |
+| [AI setup](ai/README.md) | Agent roles, reviews and workflows for Claude, Gemini, Copilot and ChatGPT. Shared context: [AGENTS.md](AGENTS.md) |
 
 ## Tech stack
 
@@ -49,9 +51,12 @@ Unity 6.3 LTS · Universal Render Pipeline · OpenXR + Unity OpenXR: Meta · XR 
 ```text
 solo-leveling-awakening/
 ├── SoloLevelingAwakening/   Unity project (created in week 1)
-├── docs/                    design and process docs, images
-├── tools/                   setup scripts
-├── .github/                 issue and pull request templates
+├── docs/                    GDD, design specs, process docs, images
+├── ai/                      AI playbooks: roles, reviews, workflows
+├── tools/                   setup and repo-check scripts
+├── .github/                 templates, CI workflows, Copilot instructions, prompts and agents
+├── .claude/  .gemini/       Claude Code and Gemini CLI agents and commands
+├── AGENTS.md                context for AI assistants (CLAUDE.md, GEMINI.md import it)
 ├── CONTRIBUTING.md
 ├── CREDITS.md
 └── README.md
