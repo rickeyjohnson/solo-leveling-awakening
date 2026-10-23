@@ -1,0 +1,19 @@
+{
+    "name": "SLA.UI",
+    "rootNamespace": "SLA.UI",
+    "references": [
+        "SLA.Core",
+        "SLA.Data",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
