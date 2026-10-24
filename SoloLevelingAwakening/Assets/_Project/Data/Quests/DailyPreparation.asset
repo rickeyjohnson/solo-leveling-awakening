@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f4a91e109a548f18b69fde12add182, type: 3}
+  m_Name: DailyPreparation
+  m_EditorClassIdentifier: SLA.Data::SLA.Data.QuestData
+  id: daily_preparation
+  title: 'Daily Quest: Preparation to Become Strong'
+  kind: 0
+  objective: 'Squats and punches, scaled to the player''s level (GDD: Quest system).'
+  rewardXp: 0
+  rewardStatPoints: 3
+  rewardGold: 0
+  nextQuestId: 
