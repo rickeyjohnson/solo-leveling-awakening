@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7add238678092422e9b0dd0a9695cba0, type: 3}
+  m_Name: GoblinWarren
+  m_EditorClassIdentifier: SLA.Data::SLA.Data.GateData
+  id: goblin_warren
+  displayName: Goblin Warren
+  rank: 0
+  recommendedLevels: {x: 1, y: 9}
+  isRedGate: 0
+  sceneName: Gate_GoblinWarren
+  enemies:
+  - {fileID: 11400000, guid: 2f0275903bcd149cb9cdd1bee30a30e8, type: 2}
+  - {fileID: 11400000, guid: 2b23ff7d7cafb499e8cf607e44da466d, type: 2}
+  boss: {fileID: 11400000, guid: 3151cad8523cb4bd6952216b8bae22b2, type: 2}
+  combatRooms: 2
+  objective: Defeat the Goblin Chieftain.

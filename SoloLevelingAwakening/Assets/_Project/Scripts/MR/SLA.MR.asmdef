@@ -1,0 +1,21 @@
+{
+    "name": "SLA.MR",
+    "rootNamespace": "SLA.MR",
+    "references": [
+        "SLA.Core",
+        "SLA.Data",
+        "SLA.Gameplay",
+        "Unity.XR.ARFoundation",
+        "Unity.XR.ARSubsystems",
+        "Unity.XR.CoreUtils"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -65,7 +65,7 @@ bash tools/check-repo.sh           # same hygiene checks CI runs (meta files, fo
 Unity EditMode tests (macOS path; adjust the version to `ProjectVersion.txt`):
 
 ```bash
-"/Applications/Unity/Hub/Editor/6000.3.26f1/Unity.app/Contents/MacOS/Unity" -batchmode \
+"/Applications/Unity/Hub/Editor/6000.3.27f1/Unity.app/Contents/MacOS/Unity" -batchmode \
   -projectPath SoloLevelingAwakening -runTests -testPlatform EditMode \
   -testResults /tmp/sla-tests.xml -logFile -
 ```
