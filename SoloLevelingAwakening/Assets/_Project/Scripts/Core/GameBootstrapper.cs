@@ -4,20 +4,18 @@ using UnityEngine;
 namespace SLA.Core
 {
     /// <summary>
-    /// First thing that runs: loads the save, then sends the player to first-run setup or the title screen.
+    /// First thing that runs: loads the save into GameSession, then sends the player to first-run
+    /// setup (no save yet) or the title screen.
     /// </summary>
     public class GameBootstrapper : MonoBehaviour
     {
-        public static SaveData Save { get; private set; }
-
         private void Start()
         {
             bool hasSave = SaveSystem.Exists();
-            Save = SaveSystem.Load();
+            GameSession.Data = SaveSystem.Load();
+            GameSession.HubScene = SceneNames.HubMR;
 
-            var states = GameStateManager.Instance;
-            var loader = SceneLoader.Instance;
-            if (states == null || loader == null)
+            if (GameStateManager.Instance == null || SceneLoader.Instance == null)
             {
                 Debug.LogError("[GameBootstrapper] GameStateManager and SceneLoader must be in the Bootstrap scene.");
                 return;
@@ -25,13 +23,11 @@ namespace SLA.Core
 
             if (hasSave)
             {
-                states.ChangeState(GameState.Title);
-                loader.LoadContentScene(SceneNames.Title);
+                GameFlow.GoTo(GameState.Title, SceneNames.Title);
             }
             else
             {
-                states.ChangeState(GameState.FirstRunSetup);
-                loader.LoadContentScene(SceneNames.Setup);
+                GameFlow.GoTo(GameState.FirstRunSetup, SceneNames.Setup);
             }
         }
     }

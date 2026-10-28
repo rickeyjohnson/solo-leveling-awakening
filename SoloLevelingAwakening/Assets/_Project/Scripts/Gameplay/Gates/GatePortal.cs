@@ -11,8 +11,9 @@ namespace SLA.Gates
     [RequireComponent(typeof(Collider))]
     public class GatePortal : MonoBehaviour
     {
-        [Tooltip("Gate to enter. Leave empty for a portal that leads to Target Scene instead.")]
+        [Tooltip("Gate to enter. Leave empty for a portal that leads to Target State instead.")]
         [SerializeField] private GateData _gate;
+        [Tooltip("Not used when Target State is Hub: portals home go to the hub the player came from (MRH-12).")]
         [SerializeField] private string _targetScene = SceneNames.HubMR;
         [SerializeField] private GameState _targetState = GameState.Hub;
 
@@ -36,18 +37,12 @@ namespace SLA.Gates
                 return;
             }
 
-            var loader = SceneLoader.Instance;
-            if (loader == null || loader.IsLoading)
-            {
-                return;
-            }
-
-            _used = true;
-            string scene = _gate != null ? _gate.sceneName : _targetScene;
             GameState state = _gate != null ? GameState.Gate : _targetState;
+            string scene = _gate != null ? _gate.sceneName
+                : state == GameState.Hub ? GameSession.HubScene
+                : _targetScene;
 
-            GameStateManager.Instance?.ChangeState(state);
-            loader.LoadContentScene(scene);
+            _used = GameFlow.GoTo(state, scene);
         }
     }
 }

@@ -20,6 +20,28 @@ namespace SLA.Core.Save
         public SettingsSave settings = new SettingsSave();
 
         public static SaveData CreateNew() => new SaveData();
+
+        /// <summary>
+        /// A fresh game that keeps the player's comfort settings and calibrated height from
+        /// <paramref name="previous"/>, so New game doesn't send them back through setup.
+        /// </summary>
+        public static SaveData NewGameFrom(SaveData previous)
+        {
+            var fresh = CreateNew();
+            if (previous == null)
+            {
+                return fresh;
+            }
+
+            fresh.player.standingHeight = previous.player.standingHeight;
+            fresh.settings = new SettingsSave
+            {
+                comfortPreset = previous.settings.comfortPreset,
+                uiMode = previous.settings.uiMode,
+                leftHanded = previous.settings.leftHanded,
+            };
+            return fresh;
+        }
     }
 
     [Serializable]
