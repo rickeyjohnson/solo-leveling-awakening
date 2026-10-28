@@ -69,6 +69,8 @@ namespace SLA.EditorTools
                     BuildSandbox(member, origin);
                 }
 
+                GameFlowSceneSetup.ApplyToScenes();
+
                 EditorBuildSettings.scenes = scenes.Select(p => new EditorBuildSettingsScene(p, true)).ToArray();
                 AssetDatabase.SaveAssets();
                 Debug.Log($"[SceneScaffolder] Built {scenes.Count} build scenes and {TeamSandboxes.Length} sandboxes.");

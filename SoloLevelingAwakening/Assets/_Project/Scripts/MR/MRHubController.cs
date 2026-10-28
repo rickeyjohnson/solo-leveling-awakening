@@ -71,6 +71,7 @@ namespace SLA.MR
             }
 
             Debug.LogWarning("[MRHubController] No key wall found; loading the virtual hub.");
+            GameSession.HubScene = SceneNames.HubVirtual; // portals home come back here too
             SceneLoader.Instance?.LoadContentScene(SceneNames.HubVirtual);
         }
 

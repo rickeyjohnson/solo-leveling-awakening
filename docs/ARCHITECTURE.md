@@ -65,6 +65,11 @@ One assembly definition per area keeps compile times short and stops accidental 
 
 `GameStateManager` (in Bootstrap) owns one `GameState`. Saves happen only on state exit, never mid-gate.
 
+- **Change state with `GameFlow.GoTo(state, sceneName)`**: it changes the state and loads the scene as one step, behind a fade, or does nothing. Only the transitions in the diagram are allowed (`GameStateRules`); anything else is refused with an error in the Console.
+- **Pause** is an overlay (`GameStateManager.Pause` / `Resume`), not a transition: it never saves.
+- **Saving:** `SaveOnStateExit` writes `GameSession.Data` whenever the game leaves a state whose "Saves on exit" entry below isn't "—".
+- **Which hub:** `GameSession.HubScene` remembers whether the player is in `Hub_MR` or `Hub_Virtual`, so portals home lead back to the same one.
+
 | State | Scenes loaded | Enters when | Saves on exit |
 | --- | --- | --- | --- |
 | Boot | Bootstrap | App launch | — |
