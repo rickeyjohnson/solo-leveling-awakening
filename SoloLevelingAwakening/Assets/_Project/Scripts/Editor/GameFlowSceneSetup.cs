@@ -1,6 +1,7 @@
 using System;
 using SLA.Core;
 using SLA.Core.Events;
+using SLA.Data;
 using SLA.Gates;
 using SLA.UI;
 using Unity.XR.CoreUtils;
@@ -17,13 +18,15 @@ namespace SLA.EditorTools
 {
     /// <summary>
     /// Wires the game flow (issue #15) into the scenes: the screen fader and save-on-exit in Bootstrap,
-    /// and placeholder menus in Title and Setup. Re-runnable: anything already there is left alone.
+    /// placeholder menus in Title and Setup, and the first gate on the hub portals. Re-runnable: anything
+    /// already there is left alone.
     /// Headless: -executeMethod SLA.EditorTools.GameFlowSceneSetup.ApplyBatch
     /// </summary>
     public static class GameFlowSceneSetup
     {
         const string FadeShaderName = "SLA/ScreenFade";
         const string FadeMaterialPath = ProjectConfigurator.MaterialsDir + "/M_ScreenFade.mat";
+        const string FirstGatePath = ProjectConfigurator.DataDir + "/Gates/GoblinWarren.asset";
 
         // UI-1 palette (docs/ART_PIPELINE.md): navy panel, System blue, off-white text.
         static readonly Color Navy = new Color32(0x0B, 0x1A, 0x2E, 0xCC);
@@ -54,8 +57,10 @@ namespace SLA.EditorTools
             EditScene(SceneNames.Bootstrap, () => SetUpBootstrap(fadeMaterial));
             EditScene(SceneNames.Title, SetUpTitle);
             EditScene(SceneNames.Setup, SetUpSetup);
+            EditScene(SceneNames.HubMR, SetUpHubPortals);
+            EditScene(SceneNames.HubVirtual, SetUpHubPortals);
             AssetDatabase.SaveAssets();
-            Debug.Log("[GameFlowSceneSetup] Bootstrap, Title and Setup are wired for the game flow.");
+            Debug.Log("[GameFlowSceneSetup] Bootstrap, Title, Setup and the hubs are wired for the game flow.");
         }
 
         // Saves only when something was added, so re-running leaves scene files untouched.
@@ -83,6 +88,26 @@ namespace SLA.EditorTools
             material.SetColor("_Color", Color.black);
             AssetDatabase.CreateAsset(material, FadeMaterialPath);
             return material;
+        }
+
+        // ------------------------------------------------------------------ Hubs
+
+        // A hub portal with no gate would lead back to the hub. The gate is loaded after the scene opens:
+        // opening a scene unloads assets nothing references, which is how SceneScaffolder lost it.
+        static bool SetUpHubPortals()
+        {
+            var gate = AssetDatabase.LoadAssetAtPath<GateData>(FirstGatePath);
+            if (gate == null) throw new InvalidOperationException($"{FirstGatePath} not found.");
+
+            bool changed = false;
+            foreach (var portal in UnityEngine.Object.FindObjectsByType<GatePortal>(FindObjectsSortMode.None))
+            {
+                if (portal.Gate != null) continue;
+                Assign(portal, "_gate", gate);
+                changed = true;
+            }
+
+            return changed;
         }
 
         // ------------------------------------------------------------------ Bootstrap
