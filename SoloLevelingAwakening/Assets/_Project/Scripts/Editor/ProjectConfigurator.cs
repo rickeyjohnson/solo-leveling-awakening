@@ -32,6 +32,11 @@ namespace SLA.EditorTools
         public const string ScenesDir = Root + "/Scenes";
         public const string MaterialsDir = Root + "/Art/Materials";
 
+        /// <summary>XRI interaction layer for teleport targets; the XRI samples reserve 31 for "Teleport".</summary>
+        public const int TeleportInteractionLayer = 31;
+        const string TeleportInteractionLayerName = "Teleport";
+        const string InteractionLayerSettingsPath = "Assets/XRI/Settings/Resources/InteractionLayerSettings.asset";
+
         static readonly string[] Layers =
         {
             "Player", "PlayerHands", "PlayerWeapon", "Enemy", "EnemyWeapon", "Environment", "RoomScan",
@@ -67,6 +72,7 @@ namespace SLA.EditorTools
                 ConfigureUrp();
                 ConfigureXr();
                 ConfigureLayers();
+                ConfigureInteractionLayers();
                 CreateDataAssets();
                 ImportXriStarterAssets();
                 AssetDatabase.SaveAssets();
@@ -88,7 +94,7 @@ namespace SLA.EditorTools
                      {
                          SettingsDir, DataDir + "/Events", DataDir + "/Weapons", DataDir + "/Enemies",
                          DataDir + "/Gates", DataDir + "/Skills", DataDir + "/Quests", ScenesDir + "/Gates",
-                         ScenesDir + "/Sandbox", MaterialsDir,
+                         ScenesDir + "/Sandbox", MaterialsDir, SettingsDir + "/Comfort", Root + "/Prefabs/Player",
                      })
             {
                 EnsureFolder(path);
@@ -255,6 +261,36 @@ namespace SLA.EditorTools
             tagManager.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>
+        /// Names XRI interaction layer 31 "Teleport", as the Starter Assets' project validation asks. Teleport
+        /// rays and NavMeshTeleportationArea use bit 31 either way; the name makes it readable in the Inspector.
+        /// </summary>
+        public static void ConfigureInteractionLayers()
+        {
+            // InteractionLayerSettings is internal to XRI, so edit its asset through SerializedObject.
+            var settings = AssetDatabase.LoadMainAssetAtPath(InteractionLayerSettingsPath);
+            if (settings == null)
+            {
+                Debug.LogWarning($"[ProjectConfigurator] {InteractionLayerSettingsPath} not found; open Project Settings > XR Interaction Toolkit once, then re-run.");
+                return;
+            }
+
+            var serialized = new SerializedObject(settings);
+            var names = serialized.FindProperty("m_LayerNames");
+            if (names == null || names.arraySize <= TeleportInteractionLayer) return;
+
+            var slot = names.GetArrayElementAtIndex(TeleportInteractionLayer);
+            if (slot.stringValue == TeleportInteractionLayerName) return;
+            if (!string.IsNullOrEmpty(slot.stringValue))
+            {
+                Debug.LogWarning($"[ProjectConfigurator] Interaction layer {TeleportInteractionLayer} is '{slot.stringValue}', not '{TeleportInteractionLayerName}'; teleport targets use it anyway.");
+                return;
+            }
+
+            slot.stringValue = TeleportInteractionLayerName;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         // ------------------------------------------------------------------ data
 
         public static T CreateOrLoad<T>(string path, Action<T> init = null) where T : ScriptableObject
@@ -283,6 +319,7 @@ namespace SLA.EditorTools
             CreateOrLoad<StringEventChannel>(ev + "OnSkillUsed.asset");
             CreateOrLoad<FloatEventChannel>(ev + "OnDamageTaken.asset");
             CreateOrLoad<VoidEventChannel>(ev + "OnGateCleared.asset");
+            CreateOrLoad<VoidEventChannel>(ev + "OnSettingsChanged.asset");
 
             string w = DataDir + "/Weapons/";
             CreateOrLoad<WeaponData>(w + "RustyDagger.asset", d => { d.id = "rusty_dagger"; d.displayName = "Rusty Dagger"; d.rank = Rank.E; d.baseDamage = 10f; });

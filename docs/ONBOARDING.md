@@ -60,7 +60,7 @@ Plan for at least one Windows PC on the team: Link is the fastest way to iterate
 
 1. Create an empty project at `SoloLevelingAwakening/` with 6000.3.27f1 (`Unity -batchmode -quit -createProject <repo>/SoloLevelingAwakening`).
 2. Copy in only `Assets/_Project/Scripts/Editor/Bootstrap/`, then run `-batchmode -buildTarget Android -executeMethod SLA.EditorTools.Bootstrap.PackageInstaller.Install` (no `-quit`). It installs every package in [ARCHITECTURE](ARCHITECTURE.md#packages).
-3. Copy in the rest of `Assets/_Project/`, then run **Tools → SLA → Configure Project Settings** (`SLA.EditorTools.ProjectConfigurator.ConfigureSettings`): URP for Quest, OpenXR + Meta features, the [build settings](ARCHITECTURE.md#build-settings-quest), layers and starter data assets.
+3. Copy in the rest of `Assets/_Project/` and the committed `Assets/Samples/` (the `SLA.Player` assembly builds on the XRI Starter Assets sample, so it must be there before the scripts compile), then run **Tools → SLA → Configure Project Settings** (`SLA.EditorTools.ProjectConfigurator.ConfigureSettings`): URP for Quest, OpenXR + Meta features, the [build settings](ARCHITECTURE.md#build-settings-quest), layers and starter data assets.
 4. Run **Tools → SLA → Rebuild Starting Scenes** (`SLA.EditorTools.SceneScaffolder.BuildScenes`) once. It overwrites scenes.
 5. Run the EditMode tests and `bash tools/check-repo.sh`, then commit everything **with** its `.meta` files.
 

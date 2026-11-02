@@ -61,4 +61,18 @@ namespace SLA.Data
         Key,
         MonsterCore,
     }
+
+    /// <summary>How the thumbstick moves the player in a comfort preset (CMF presets table).</summary>
+    public enum MovementMode
+    {
+        Smooth,
+        Teleport,
+    }
+
+    /// <summary>How the thumbstick turns the player in a comfort preset (CMF presets table).</summary>
+    public enum TurnMode
+    {
+        Snap,
+        Smooth,
+    }
 }

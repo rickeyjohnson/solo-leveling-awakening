@@ -6,7 +6,10 @@
         "SLA.Data",
         "SLA.Gameplay",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "SLA.Player",
+        "SLA.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

@@ -44,6 +44,8 @@ Short on purpose. `.editorconfig` enforces formatting in Rider and VS Code; this
 | `RoomScan` | MR room geometry from AR Foundation |
 | `UI` | World-space System windows |
 
+XRI **interaction** layers (separate from the physics layers above) are shared config too: layer 31, `Teleport`, is for teleport targets (`NavMeshTeleportationArea`); everything else uses `Default`.
+
 ## Comments and docs
 
 - Comment **why**, not what. The code says what.

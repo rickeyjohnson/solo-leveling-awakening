@@ -6,7 +6,7 @@ applyTo: "**/*.cs"
 
 Follow [CODING_STANDARDS.md](../../docs/CODING_STANDARDS.md). The rules reviewers check most:
 
-- Namespaces `SLA.Core`, `SLA.Data`, `SLA.Combat`, `SLA.Skills`, `SLA.Progression`, `SLA.Quests`, `SLA.Exercise`, `SLA.AI`, `SLA.Gates`, `SLA.MR`, `SLA.UI`, matching the assembly folder.
+- Namespaces `SLA.Core`, `SLA.Data`, `SLA.Combat`, `SLA.Skills`, `SLA.Progression`, `SLA.Quests`, `SLA.Exercise`, `SLA.AI`, `SLA.Gates`, `SLA.MR`, `SLA.Player`, `SLA.UI`, matching the assembly folder.
 - `[SerializeField] private` fields named `_camelCase`; PascalCase types, methods and public members; Allman braces; units in names (`durationSeconds`, `speedMetersPerSecond`).
 - Cache components in `Awake`. No `GetComponent`, `Find*` or `Camera.main` in `Update`.
 - No allocations in per-frame code: no LINQ, `new` collections, string building or capturing lambdas in `Update`/`FixedUpdate`. Use `NonAlloc` physics queries and pools.

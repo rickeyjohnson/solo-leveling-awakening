@@ -3,33 +3,32 @@ using SLA.Core;
 using SLA.Core.Events;
 using SLA.Gates;
 using SLA.UI;
-using Unity.XR.CoreUtils;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace SLA.EditorTools
 {
     /// <summary>
-    /// Wires the game flow (issue #15) into the scenes: the screen fader and save-on-exit in Bootstrap,
-    /// and placeholder menus in Title and Setup. Re-runnable: anything already there is left alone.
+    /// Wires the game flow (issue #15) into the scenes: save-on-exit in Bootstrap, and placeholder menus in
+    /// Title (with the standing-play note, CMF-13) and Setup (height calibration, then the comfort preset,
+    /// issue #11). The screen fader comes with the PlayerRig prefab (PlayerRigSetup).
+    /// Re-runnable: anything already there is left alone.
     /// Headless: -executeMethod SLA.EditorTools.GameFlowSceneSetup.ApplyBatch
     /// </summary>
     public static class GameFlowSceneSetup
     {
-        const string FadeShaderName = "SLA/ScreenFade";
-        const string FadeMaterialPath = ProjectConfigurator.MaterialsDir + "/M_ScreenFade.mat";
-
         // UI-1 palette (docs/ART_PIPELINE.md): navy panel, System blue, off-white text.
-        static readonly Color Navy = new Color32(0x0B, 0x1A, 0x2E, 0xCC);
-        static readonly Color SystemBlue = new Color32(0x3F, 0xB8, 0xFF, 0xFF);
-        static readonly Color ButtonFill = new Color32(0x3F, 0xB8, 0xFF, 0x40);
-        static readonly Color OffWhite = new Color32(0xDA, 0xDA, 0xDA, 0xFF);
+        internal static readonly Color Navy = new Color32(0x0B, 0x1A, 0x2E, 0xCC);
+        internal static readonly Color SystemBlue = new Color32(0x3F, 0xB8, 0xFF, 0xFF);
+        internal static readonly Color ButtonFill = new Color32(0x3F, 0xB8, 0xFF, 0x40);
+        internal static readonly Color OffWhite = new Color32(0xDA, 0xDA, 0xDA, 0xFF);
+
+        const string StandingOnly = "Standing play only — seated play isn't supported.";
 
         [MenuItem("Tools/SLA/Set Up Game Flow In Scenes")]
         public static void ApplyMenu() => ApplyToScenes();
@@ -50,16 +49,30 @@ namespace SLA.EditorTools
 
         public static void ApplyToScenes()
         {
-            var fadeMaterial = EnsureFadeMaterial();
-            EditScene(SceneNames.Bootstrap, () => SetUpBootstrap(fadeMaterial));
+            ProjectConfigurator.CreateOrLoad<VoidEventChannel>(PlayerRigSetup.OnSettingsChangedPath);
+            EditScene(SceneNames.Bootstrap, SetUpBootstrap);
             EditScene(SceneNames.Title, SetUpTitle);
             EditScene(SceneNames.Setup, SetUpSetup);
             AssetDatabase.SaveAssets();
             Debug.Log("[GameFlowSceneSetup] Bootstrap, Title and Setup are wired for the game flow.");
         }
 
-        // Saves only when something was added, so re-running leaves scene files untouched.
-        static void EditScene(string name, Func<bool> edit)
+        /// <summary>
+        /// Loads an asset by path. Call it inside an EditScene edit: opening a scene unloads assets that
+        /// only a local variable holds, which would turn an earlier reference into null.
+        /// </summary>
+        internal static T Load<T>(string path) where T : UnityEngine.Object
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (asset == null) throw new InvalidOperationException($"{path} is missing.");
+            return asset;
+        }
+
+        /// <summary>
+        /// Opens Scenes/<paramref name="name"/>.unity (name may include a subfolder) and saves it only when
+        /// <paramref name="edit"/> returns true, so re-running leaves scene files untouched.
+        /// </summary>
+        internal static void EditScene(string name, Func<bool> edit)
         {
             var scene = EditorSceneManager.OpenScene($"{ProjectConfigurator.ScenesDir}/{name}.unity", OpenSceneMode.Single);
             if (!edit()) return;
@@ -67,97 +80,91 @@ namespace SLA.EditorTools
             EditorSceneManager.SaveScene(scene);
         }
 
-        static Material EnsureFadeMaterial()
-        {
-            var material = AssetDatabase.LoadAssetAtPath<Material>(FadeMaterialPath);
-            if (material != null) return material;
-
-            var shader = Shader.Find(FadeShaderName);
-            if (shader == null)
-            {
-                throw new InvalidOperationException($"Shader {FadeShaderName} not found. Is Art/Shaders/ScreenFade.shader imported?");
-            }
-
-            ProjectConfigurator.EnsureFolder(ProjectConfigurator.MaterialsDir);
-            material = new Material(shader);
-            material.SetColor("_Color", Color.black);
-            AssetDatabase.CreateAsset(material, FadeMaterialPath);
-            return material;
-        }
-
         // ------------------------------------------------------------------ Bootstrap
 
-        static bool SetUpBootstrap(Material fadeMaterial)
+        static bool SetUpBootstrap()
         {
-            bool changed = false;
             var systems = GameObject.Find("Systems");
             if (systems == null) throw new InvalidOperationException("Bootstrap has no Systems object.");
+            if (systems.GetComponent<SaveOnStateExit>() != null) return false;
 
-            if (systems.GetComponent<SaveOnStateExit>() == null)
-            {
-                var channel = AssetDatabase.LoadAssetAtPath<GameStateEventChannel>(ProjectConfigurator.DataDir + "/Events/OnGameStateChanged.asset");
-                Assign(systems.AddComponent<SaveOnStateExit>(), "_onGameStateChanged", channel);
-                changed = true;
-            }
-
-            if (systems.GetComponent<ScreenFader>() == null)
-            {
-                var origin = UnityEngine.Object.FindAnyObjectByType<XROrigin>();
-                if (origin == null || origin.Camera == null) throw new InvalidOperationException("Bootstrap has no XR Origin camera for the fade.");
-
-                var fader = systems.AddComponent<ScreenFader>();
-                Assign(fader, "_fadeRenderer", CreateFadeSphere(origin.Camera, fadeMaterial));
-                Assign(fader, "_sceneLoader", systems.GetComponent<SceneLoader>());
-                changed = true;
-            }
-
-            return changed;
-        }
-
-        static MeshRenderer CreateFadeSphere(Camera camera, Material material)
-        {
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = "Screen Fade";
-            UnityEngine.Object.DestroyImmediate(sphere.GetComponent<Collider>());
-            sphere.transform.SetParent(camera.transform, false);
-            // A sphere around the eyes covers every direction; it only has to sit beyond the near clip plane.
-            float radius = Mathf.Max(0.25f, camera.nearClipPlane * 4f);
-            sphere.transform.localScale = Vector3.one * (radius * 2f);
-
-            var renderer = sphere.GetComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
-            renderer.shadowCastingMode = ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-            renderer.lightProbeUsage = LightProbeUsage.Off;
-            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-            return renderer;
+            var channel = Load<GameStateEventChannel>(ProjectConfigurator.DataDir + "/Events/OnGameStateChanged.asset");
+            Assign(systems.AddComponent<SaveOnStateExit>(), "_onGameStateChanged", channel);
+            return true;
         }
 
         // ------------------------------------------------------------------ Title and Setup
 
         static bool SetUpTitle()
         {
-            if (UnityEngine.Object.FindAnyObjectByType<TitleMenu>() != null) return false;
+            var existing = UnityEngine.Object.FindAnyObjectByType<TitleMenu>();
+            if (existing != null && UnityEngine.Object.FindAnyObjectByType<EyeLevelPlacement>() != null) return false;
 
+            // Title scenes built for #15 lack the standing-play line and eye-level placement: rebuild the placeholder.
+            if (existing != null)
+            {
+                UnityEngine.Object.DestroyImmediate(existing.gameObject);
+                DestroyNamed("Title Canvas");
+            }
+
+            var settingsChanged = Load<VoidEventChannel>(PlayerRigSetup.OnSettingsChangedPath);
             EnsureSpawn();
             var menu = new GameObject("Title Menu").AddComponent<TitleMenu>();
-            var panel = CreatePanel("Title Canvas", "SOLO LEVELING: AWAKENING", "[Placeholder title screen]");
+            var panel = CreatePanel("Title Canvas", new Vector2(720f, 620f), "SOLO LEVELING: AWAKENING", "[Placeholder title screen]");
             AddButton(panel, "Continue", menu.Continue);
             AddButton(panel, "Continue in the virtual room", menu.ContinueInVirtualRoom);
             AddButton(panel, "New game", menu.NewGame);
+            AddText(panel, StandingOnly, 28, OffWhite, 44f); // CMF-13
+            AddEyeLevelPlacement(panel, settingsChanged);
             return true;
         }
 
         static bool SetUpSetup()
         {
-            if (UnityEngine.Object.FindAnyObjectByType<FirstRunSetupMenu>() != null) return false;
+            var existing = UnityEngine.Object.FindAnyObjectByType<FirstRunSetupMenu>();
+            if (existing != null && UnityEngine.Object.FindAnyObjectByType<HeightCalibrator>() != null) return false;
 
+            // Setup scenes built for #15 only had the preset buttons: rebuild the placeholder with calibration first.
+            if (existing != null)
+            {
+                UnityEngine.Object.DestroyImmediate(existing.gameObject);
+                DestroyNamed("Setup Canvas");
+            }
+
+            var settingsChanged = Load<VoidEventChannel>(PlayerRigSetup.OnSettingsChangedPath);
             EnsureSpawn();
-            var menu = new GameObject("Setup Menu").AddComponent<FirstRunSetupMenu>();
-            var panel = CreatePanel("Setup Canvas", "[Choose how you move]", "Recommended is the default.");
-            AddButton(panel, "Recommended: smooth, snap turn", menu.ChooseRecommended);
-            AddButton(panel, "Comfortable: teleport", menu.ChooseComfortable);
-            AddButton(panel, "Advanced: smooth turning", menu.ChooseAdvanced);
+            var menuObject = new GameObject("Setup Menu");
+            var calibrator = menuObject.AddComponent<HeightCalibrator>();
+            var menu = menuObject.AddComponent<FirstRunSetupMenu>();
+
+            var panel = CreateCanvas("Setup Canvas", new Vector2(720f, 760f));
+            // The panel's height follows whichever step is showing.
+            panel.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            // CMF-13, QST-8: the System line comes from the narrative voice library.
+            var calibration = AddGroup(panel, "Calibration Step");
+            AddText(calibration, "[Stand still.]", 44, SystemBlue, 64f);
+            AddText(calibration, "Measuring your standing height.", 28, OffWhite, 44f);
+            var progressFill = AddProgressBar(calibration);
+
+            var presets = AddGroup(panel, "Preset Step");
+            AddText(presets, "[Choose how you move]", 44, SystemBlue, 64f);
+            AddText(presets, "Recommended is the default.", 28, OffWhite, 44f);
+            AddButton(presets, "Recommended: smooth, snap turn", menu.ChooseRecommended);
+            AddButton(presets, "Comfortable: teleport", menu.ChooseComfortable);
+            AddButton(presets, "Advanced: smooth turning", menu.ChooseAdvanced);
+            var leftHanded = AddButton(presets, "Left-handed: off", menu.ToggleLeftHanded);
+            AddButton(presets, "Measure again", menu.MeasureAgain);
+            presets.gameObject.SetActive(false);
+
+            Assign(calibrator, "_onSettingsChanged", settingsChanged);
+            Assign(menu, "_calibrator", calibrator);
+            Assign(menu, "_calibrationStep", calibration.gameObject);
+            Assign(menu, "_presetStep", presets.gameObject);
+            Assign(menu, "_progressFill", progressFill);
+            Assign(menu, "_leftHandedLabel", leftHanded.GetComponentInChildren<Text>());
+            Assign(menu, "_onSettingsChanged", settingsChanged);
+            AddEyeLevelPlacement(panel, settingsChanged);
             return true;
         }
 
@@ -168,14 +175,29 @@ namespace SLA.EditorTools
             new GameObject("Player Spawn").AddComponent<PlayerSpawn>();
         }
 
-        static Transform CreatePanel(string name, string title, string subtitle)
+        static void DestroyNamed(string name)
+        {
+            var found = GameObject.Find(name);
+            if (found != null) UnityEngine.Object.DestroyImmediate(found);
+        }
+
+        // CMF-13: menus at the player's eye level, calibrated or live; the built position is the fallback.
+        static void AddEyeLevelPlacement(Transform panel, VoidEventChannel settingsChanged)
+        {
+            Assign(panel.gameObject.AddComponent<EyeLevelPlacement>(), "_onSettingsChanged", settingsChanged);
+        }
+
+        // ------------------------------------------------------------------ UI building (shared with PlayerRigSetup)
+
+        /// <summary>A navy world-space canvas, ray-clickable, with a vertical layout. 1 canvas unit = 1 mm.</summary>
+        internal static Transform CreateCanvas(string name, Vector2 sizeMillimeters)
         {
             var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(TrackedDeviceGraphicRaycaster));
             canvasObject.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
 
             var rect = (RectTransform)canvasObject.transform;
-            rect.sizeDelta = new Vector2(720f, 540f);
-            // 1.6 m ahead and a little below eye level (UI-3, UI-11); 1 canvas unit = 1 mm.
+            rect.sizeDelta = sizeMillimeters;
+            // 1.6 m ahead and a little below eye level (UI-3, UI-11) until EyeLevelPlacement knows the player's height.
             rect.position = new Vector3(0f, 1.35f, 1.6f);
             rect.localScale = Vector3.one * 0.001f;
 
@@ -188,13 +210,31 @@ namespace SLA.EditorTools
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandHeight = false;
-
-            AddText(canvasObject.transform, title, 44, SystemBlue, 64f);
-            AddText(canvasObject.transform, subtitle, 28, OffWhite, 44f);
             return canvasObject.transform;
         }
 
-        static void AddButton(Transform panel, string label, UnityAction onClick)
+        internal static Transform CreatePanel(string name, Vector2 sizeMillimeters, string title, string subtitle)
+        {
+            var panel = CreateCanvas(name, sizeMillimeters);
+            AddText(panel, title, 44, SystemBlue, 64f);
+            AddText(panel, subtitle, 28, OffWhite, 44f);
+            return panel;
+        }
+
+        /// <summary>A vertical group inside a panel, e.g. one step of a flow that is shown on its own.</summary>
+        internal static Transform AddGroup(Transform panel, string name)
+        {
+            var group = new GameObject(name, typeof(RectTransform), typeof(VerticalLayoutGroup));
+            group.transform.SetParent(panel, false);
+            var layout = group.GetComponent<VerticalLayoutGroup>();
+            layout.spacing = 20f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandHeight = false;
+            return group.transform;
+        }
+
+        internal static Button AddButton(Transform panel, string label, UnityAction onClick)
         {
             var buttonObject = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
             buttonObject.transform.SetParent(panel, false);
@@ -211,9 +251,10 @@ namespace SLA.EditorTools
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
             textRect.sizeDelta = Vector2.zero;
+            return button;
         }
 
-        static Text AddText(Transform parent, string value, int size, Color color, float preferredHeight)
+        internal static Text AddText(Transform parent, string value, int size, Color color, float preferredHeight)
         {
             var textObject = new GameObject("Text", typeof(RectTransform), typeof(Text));
             textObject.transform.SetParent(parent, false);
@@ -233,7 +274,32 @@ namespace SLA.EditorTools
             return text;
         }
 
-        static void Assign(UnityEngine.Object target, string field, UnityEngine.Object value)
+        /// <summary>A thin track with a fill whose x scale goes 0 to 1 (pivot on the left), so updating it never allocates.</summary>
+        static RectTransform AddProgressBar(Transform parent)
+        {
+            var track = new GameObject("Progress", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            track.transform.SetParent(parent, false);
+            var trackImage = track.GetComponent<Image>();
+            trackImage.color = ButtonFill;
+            trackImage.raycastTarget = false;
+            track.GetComponent<LayoutElement>().preferredHeight = 16f;
+
+            var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+            fill.transform.SetParent(track.transform, false);
+            var fillImage = fill.GetComponent<Image>();
+            fillImage.color = SystemBlue;
+            fillImage.raycastTarget = false;
+
+            var rect = (RectTransform)fill.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.sizeDelta = Vector2.zero;
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.localScale = new Vector3(0f, 1f, 1f);
+            return rect;
+        }
+
+        internal static void Assign(UnityEngine.Object target, string field, UnityEngine.Object value)
         {
             var serialized = new SerializedObject(target);
             var property = serialized.FindProperty(field);

@@ -25,12 +25,20 @@ These rules apply to **every** system. A feature that breaks one is an `S1 crash
 
 | Setting | Recommended (default) | Comfortable | Advanced |
 | --- | --- | --- | --- |
-| Movement | Smooth, 1.5 m/s walk, 3.0 m/s sprint | Teleport arc + room-scale | Smooth |
-| Turning | Snap 45° | Snap 45° | Smooth, adjustable |
-| Vignette | Medium, while moving | Strong | Off |
+| Movement | Smooth, 1.5 m/s walk, 3.0 m/s sprint | Teleport arc + room-scale | Smooth, same speeds |
+| Turning | Snap 45° | Snap 45° | Smooth, 60°/s by default (adjustable) |
+| Vignette | Medium (aperture 0.70, feathering 0.20), only while moving or turning by stick | Strong (aperture 0.55, feathering 0.15) | Off |
 | Dash | Blink with brief fade | Blink with brief fade | Blink, no fade |
 
 - **CMF-7** Every fight must be winnable with the Comfortable preset (teleport).
+
+How the presets behave:
+
+- **Smooth movement** is head-relative. Inside the stick's dead zone the player stands still; any deflection past it moves at exactly walk speed, or sprint speed, so the stick's direction is analog but its magnitude isn't (CMF-2). Clicking the movement stick toggles sprint; sprint ends when the stick returns to centre.
+- **Sticks:** the movement stick (left; right in left-handed mode, CMF-8) moves. The other stick turns sideways and, pushed forward, aims the teleport arc. In Comfortable both sticks aim the arc and turn.
+- **Teleport** lands only on NavMesh-walkable floor; an arc aimed anywhere else is grey and doesn't teleport. The view fades to black over 0.1 s, moves, and fades back in.
+- **No falling:** gravity is off while every floor is flat (CMF-3), so open edges and leaning can't drop the view. It comes back with a fall guard when a gate gets elevation changes. The step offset is 0.05 m, so walking into a low prop never lifts the view.
+- **Vignette** values are the XRI Tunneling Vignette's (a smaller aperture is stronger); it eases in and out over 0.3 s.
 
 ### Accessibility
 
@@ -49,6 +57,12 @@ These rules apply to **every** system. A feature that breaks one is an `S1 crash
 ### Performance is comfort
 
 - **CMF-16** 72 Hz held in gates and 90 Hz in the hub where possible. A dropped-frame regression is treated as a comfort bug.
+
+## Code
+
+- `ComfortPreset` assets in `Settings/Comfort/` (`Recommended`, `Comfortable`, `Advanced`) hold the presets table; `ComfortPresetTests` checks them against it.
+- The `PlayerRig` prefab (`Prefabs/Player/`, built by `PlayerRigSetup`) carries `ComfortSettings`, which applies `settings.comfortPreset` and `settings.leftHanded` live whenever `OnSettingsChanged` is raised.
+- `QuantizedMoveProvider` + `QuantizedMove` + `SprintToggle` (CMF-2), `HandednessMap` (CMF-8), `NavMeshTeleportationArea` and `TeleportFade` (CMF-7), `HeightCalibrator` in Setup (CMF-13, QST-8). Tested in `LocomotionTests` and `HeightCalibrationTests`.
 
 ## Acceptance criteria
 

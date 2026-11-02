@@ -1,0 +1,21 @@
+{
+    "name": "SLA.Player",
+    "rootNamespace": "SLA.Player",
+    "references": [
+        "SLA.Core",
+        "SLA.Data",
+        "Unity.InputSystem",
+        "Unity.XR.CoreUtils",
+        "Unity.XR.Interaction.Toolkit",
+        "Unity.XR.Interaction.Toolkit.Samples.StarterAssets"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
