@@ -1,6 +1,7 @@
 using System;
 using SLA.Core;
 using SLA.Core.Events;
+using SLA.Data;
 using SLA.Gates;
 using SLA.UI;
 using UnityEditor;
@@ -14,14 +15,16 @@ using UnityEngine.XR.Interaction.Toolkit.UI;
 namespace SLA.EditorTools
 {
     /// <summary>
-    /// Wires the game flow (issue #15) into the scenes: save-on-exit in Bootstrap, and placeholder menus in
+    /// Wires the game flow (issue #15) into the scenes: save-on-exit in Bootstrap, placeholder menus in
     /// Title (with the standing-play note, CMF-13) and Setup (height calibration, then the comfort preset,
-    /// issue #11). The screen fader comes with the PlayerRig prefab (PlayerRigSetup).
-    /// Re-runnable: anything already there is left alone.
+    /// issue #11), and the first gate on the hub portals. The screen fader comes with the PlayerRig prefab
+    /// (PlayerRigSetup). Re-runnable: anything already there is left alone.
     /// Headless: -executeMethod SLA.EditorTools.GameFlowSceneSetup.ApplyBatch
     /// </summary>
     public static class GameFlowSceneSetup
     {
+        const string FirstGatePath = ProjectConfigurator.DataDir + "/Gates/GoblinWarren.asset";
+
         // UI-1 palette (docs/ART_PIPELINE.md): navy panel, System blue, off-white text.
         internal static readonly Color Navy = new Color32(0x0B, 0x1A, 0x2E, 0xCC);
         internal static readonly Color SystemBlue = new Color32(0x3F, 0xB8, 0xFF, 0xFF);
@@ -53,8 +56,10 @@ namespace SLA.EditorTools
             EditScene(SceneNames.Bootstrap, SetUpBootstrap);
             EditScene(SceneNames.Title, SetUpTitle);
             EditScene(SceneNames.Setup, SetUpSetup);
+            EditScene(SceneNames.HubMR, SetUpHubPortals);
+            EditScene(SceneNames.HubVirtual, SetUpHubPortals);
             AssetDatabase.SaveAssets();
-            Debug.Log("[GameFlowSceneSetup] Bootstrap, Title and Setup are wired for the game flow.");
+            Debug.Log("[GameFlowSceneSetup] Bootstrap, Title, Setup and the hubs are wired for the game flow.");
         }
 
         /// <summary>
@@ -78,6 +83,24 @@ namespace SLA.EditorTools
             if (!edit()) return;
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
+        }
+
+        // ------------------------------------------------------------------ Hubs
+
+        // A hub portal with no gate would lead back to the hub. The gate is loaded inside the edit (see Load):
+        // SceneScaffolder loaded it before opening scenes, which is how the portals lost it.
+        static bool SetUpHubPortals()
+        {
+            var gate = Load<GateData>(FirstGatePath);
+            bool changed = false;
+            foreach (var portal in UnityEngine.Object.FindObjectsByType<GatePortal>(FindObjectsSortMode.None))
+            {
+                if (portal.Gate != null) continue;
+                Assign(portal, "_gate", gate);
+                changed = true;
+            }
+
+            return changed;
         }
 
         // ------------------------------------------------------------------ Bootstrap

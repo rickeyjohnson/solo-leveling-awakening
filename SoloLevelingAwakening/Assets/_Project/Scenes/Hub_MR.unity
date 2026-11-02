@@ -247,7 +247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c24357e7b948469b8407731f26a9409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SLA.Gameplay::SLA.Gates.GatePortal
-  _gate: {fileID: 0}
+  _gate: {fileID: 11400000, guid: 2faee6aa819ff4a06b5ff1363058d175, type: 2}
   _targetScene: Hub_MR
   _targetState: 3
 --- !u!65 &225073322
