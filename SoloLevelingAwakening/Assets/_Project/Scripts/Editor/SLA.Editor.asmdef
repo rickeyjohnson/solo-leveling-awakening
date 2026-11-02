@@ -17,7 +17,10 @@
         "Unity.XR.CoreUtils",
         "Unity.XR.ARFoundation",
         "Unity.XR.Interaction.Toolkit",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "SLA.Player",
+        "Unity.AI.Navigation",
+        "Unity.XR.Interaction.Toolkit.Samples.StarterAssets"
     ],
     "includePlatforms": [
         "Editor"

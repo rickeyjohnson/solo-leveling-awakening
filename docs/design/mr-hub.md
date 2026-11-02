@@ -28,6 +28,7 @@ The hub is the player's real room, seen through Quest 3 passthrough and understo
 - **MRH-10** "End the day" saves and closes the session.
 - **MRH-11** The hub must not depend on the Quest 3 depth sensor (the 3S has none); only room-scan data.
 - **MRH-12** The expo build always offers `Hub_Virtual` from the title screen, since booths may not have a scanned room.
+- **MRH-13** In `Hub_MR` the player moves only by walking: stick movement, teleport and stick turning are off (whatever the comfort preset), so the passthrough room and the portal on the real wall never drift from the real room. They come back as soon as `Hub_MR` unloads, whether for a gate or the fallback to `Hub_Virtual`, which uses the comfort preset like any other scene.
 
 ## Code
 
@@ -35,6 +36,7 @@ The hub is the player's real room, seen through Quest 3 passthrough and understo
 - `KeyWallFinder.TryFindKeyWall` implements MRH-2.
 - `PassthroughController.SetPassthrough(bool)`.
 - `GatePortal` (trigger) implements MRH-8 with `SceneLoader`.
+- A `StickLocomotionLock` in `Hub_MR` implements MRH-13; the rig's `ComfortSettings` turns stick locomotion off while any lock is loaded.
 - Week-3 spike: confirm AR Foundation reports the room-scan walls on Quest 3 / 3S. Fallback: Meta MR Utility Kit (see [DECISIONS](../DECISIONS.md)).
 
 ## Acceptance criteria

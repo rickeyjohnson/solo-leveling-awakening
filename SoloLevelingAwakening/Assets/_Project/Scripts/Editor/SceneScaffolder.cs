@@ -7,7 +7,6 @@ using SLA.Core.Events;
 using SLA.Data;
 using SLA.Gates;
 using SLA.MR;
-using Unity.XR.CoreUtils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -50,12 +49,13 @@ namespace SLA.EditorTools
             {
                 ProjectConfigurator.EnsureFolders();
                 CreateMaterials();
-                var origin = FindXrOriginPrefab();
+                PlayerRigSetup.EnsureAssets();
+                var rig = PlayerRigSetup.EnsureRigPrefab();
                 var gate = AssetDatabase.LoadAssetAtPath<GateData>(ProjectConfigurator.DataDir + "/Gates/GoblinWarren.asset");
 
                 var scenes = new List<string>
                 {
-                    BuildBootstrap(origin),
+                    BuildBootstrap(rig),
                     BuildEmpty(SceneNames.Title, "Title screen: Continue / New game (MR & UI engineer)."),
                     BuildEmpty(SceneNames.Setup, "First-run setup: height calibration, comfort preset, room scan check."),
                     BuildHubMR(gate),
@@ -66,10 +66,11 @@ namespace SLA.EditorTools
 
                 foreach (string member in TeamSandboxes)
                 {
-                    BuildSandbox(member, origin);
+                    BuildSandbox(member, rig);
                 }
 
                 GameFlowSceneSetup.ApplyToScenes();
+                PlayerRigSetup.ApplyToScenes();
 
                 EditorBuildSettings.scenes = scenes.Select(p => new EditorBuildSettingsScene(p, true)).ToArray();
                 AssetDatabase.SaveAssets();
@@ -85,22 +86,11 @@ namespace SLA.EditorTools
 
         // ------------------------------------------------------------------ scenes
 
-        static string BuildBootstrap(GameObject originPrefab)
+        // The PlayerRig carries the (disabled) AR plane and camera managers the MR hub turns on (MRH-1).
+        static string BuildBootstrap(GameObject rigPrefab)
         {
             var scene = NewScene();
-
-            var origin = InstantiateOrigin(originPrefab);
-            if (origin != null)
-            {
-                var xrOrigin = origin.GetComponent<XROrigin>();
-                var planes = origin.AddComponent<ARPlaneManager>();
-                planes.enabled = false;
-                if (xrOrigin != null && xrOrigin.Camera != null)
-                {
-                    var arCamera = xrOrigin.Camera.gameObject.AddComponent<ARCameraManager>();
-                    arCamera.enabled = false;
-                }
-            }
+            InstantiateRig(rigPrefab);
 
             var session = new GameObject("AR Session", typeof(ARSession));
             session.GetComponent<ARSession>().enabled = false;
@@ -195,11 +185,11 @@ namespace SLA.EditorTools
             return Save(scene, SceneNames.GateGoblinWarren, "Gates");
         }
 
-        static void BuildSandbox(string member, GameObject originPrefab)
+        static void BuildSandbox(string member, GameObject rigPrefab)
         {
             var scene = NewScene();
             AddLight();
-            InstantiateOrigin(originPrefab);
+            InstantiateRig(rigPrefab);
             Box("Floor", new Vector3(0f, -0.05f, 0f), new Vector3(10f, 0.1f, 10f), _floor);
             AddNote($"{member}'s sandbox. Never shipped; test prefabs here instead of editing shared scenes.");
             Save(scene, $"Sandbox_{member}", "Sandbox");
@@ -218,23 +208,11 @@ namespace SLA.EditorTools
             return path;
         }
 
-        static GameObject FindXrOriginPrefab()
+        // PlayerRigSetup.EnsureRigPrefab builds the prefab from the XRI Starter rig; null (with a warning) if that's missing.
+        static void InstantiateRig(GameObject prefab)
         {
-            string guid = AssetDatabase.FindAssets("XR Origin (XR Rig) t:Prefab", new[] { "Assets/Samples" }).FirstOrDefault();
-            if (guid == null)
-            {
-                Debug.LogWarning("[SceneScaffolder] XR Origin (XR Rig) prefab not found; run ConfigureSettings first to import XRI Starter Assets.");
-                return null;
-            }
-            return AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-        }
-
-        static GameObject InstantiateOrigin(GameObject prefab)
-        {
-            if (prefab == null) return null;
-            var origin = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            origin.tag = "Player";
-            return origin;
+            if (prefab == null) return;
+            PrefabUtility.InstantiatePrefab(prefab);
         }
 
         static GameObject CreatePortal(string name, GateData gate, string targetScene, GameState targetState)

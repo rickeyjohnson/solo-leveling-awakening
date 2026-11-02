@@ -25,7 +25,7 @@ Instructions for AI coding agents (Claude Code, Gemini CLI, GitHub Copilot, Code
 
 ```text
 SoloLevelingAwakening/        Unity project (Assets/_Project/** is ours; Assets/Samples, ThirdParty are imported)
-  Assets/_Project/Scripts/    Core, Data, Gameplay, MR, UI, Editor (one assembly each, namespace SLA.*)
+  Assets/_Project/Scripts/    Core, Data, Gameplay, MR, Player, UI, Editor (one assembly each, namespace SLA.*)
   Assets/_Project/Tests/      EditMode tests (NUnit)
 docs/                         GDD, design specs, process docs, images
 ai/                           tool-neutral agent playbooks (roles, reviews, workflows)
@@ -50,7 +50,7 @@ If `SoloLevelingAwakening/` does not exist yet, the Unity project hasn't been cr
 
 ## Code conventions (short version)
 
-- Namespaces `SLA.Core`, `SLA.Data`, `SLA.Combat`, `SLA.Skills`, `SLA.Progression`, `SLA.Quests`, `SLA.Exercise`, `SLA.AI`, `SLA.Gates`, `SLA.MR`, `SLA.UI`.
+- Namespaces `SLA.Core`, `SLA.Data`, `SLA.Combat`, `SLA.Skills`, `SLA.Progression`, `SLA.Quests`, `SLA.Exercise`, `SLA.AI`, `SLA.Gates`, `SLA.MR`, `SLA.Player`, `SLA.UI`.
 - `[SerializeField] private` fields named `_camelCase`; PascalCase types and methods; Allman braces; units in names (`durationSeconds`).
 - Cache components in `Awake`; physics in `FixedUpdate`; subscribe in `OnEnable`, unsubscribe in `OnDisable`; pool frequently spawned objects.
 - Details: `docs/CODING_STANDARDS.md` and `.editorconfig`.

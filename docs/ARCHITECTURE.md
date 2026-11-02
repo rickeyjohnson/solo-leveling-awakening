@@ -32,10 +32,10 @@ Assets/
 │   ├── Art/          Characters, Environments, Weapons, VFX, Materials, Shaders, Textures, Animations, UI
 │   ├── Audio/        Music, SFX, Voice, Mixers
 │   ├── Data/         ScriptableObject assets: Weapons, Enemies, Skills, Quests, Gates, Items, Events
-│   ├── Prefabs/      Player, Enemies, Weapons, UI, Gates, Props
+│   ├── Prefabs/      Player (PlayerRig), Enemies, Weapons, UI, Gates, Props
 │   ├── Scenes/       Bootstrap, Title, Setup, Hub_MR, Hub_Virtual, Penalty_Desert, Gates/, Sandbox/
 │   ├── Scripts/      one folder per assembly (below)
-│   └── Settings/     URP assets, input actions, quality settings
+│   └── Settings/     URP assets, input actions, quality settings, Comfort/ presets
 └── ThirdParty/       imported assets, unmodified (credit them in CREDITS.md)
 ```
 
@@ -46,20 +46,32 @@ One assembly definition per area keeps compile times short and stops accidental 
 | Assembly | Namespace | Contains | May reference |
 | --- | --- | --- | --- |
 | `SLA.Core` | `SLA.Core` | Event channels, game state, save/load, service locator, utilities | Unity only |
-| `SLA.Data` | `SLA.Data` | ScriptableObject definitions (WeaponData, EnemyData, SkillData, QuestData, GateData, ItemData) | Core |
+| `SLA.Data` | `SLA.Data` | ScriptableObject definitions (WeaponData, EnemyData, SkillData, QuestData, GateData, ItemData, ComfortPreset) | Core |
 | `SLA.Gameplay` | `SLA.Combat`, `SLA.Skills`, `SLA.AI`, `SLA.Progression`, `SLA.Quests`, `SLA.Exercise` | Combat, skills, enemy AI, stats/XP/inventory, quests, exercise tracking | Core, Data |
 | `SLA.MR` | `SLA.MR` | Room scan, key-wall finder, gate portal, hub placement | Core, Data |
-| `SLA.UI` | `SLA.UI` | System windows, wrist panel, HUD mode, menus | Core, Data |
+| `SLA.Player` | `SLA.Player` | The player rig: comfort presets applied live, quantized move and sprint, turning, NavMesh teleport and its fade, locomotion locks | Core, Data, XRI and its Starter Assets sample |
+| `SLA.UI` | `SLA.UI` | System windows, wrist panel, HUD mode, menus, first-run height calibration | Core, Data |
 | `SLA.Editor` | `SLA.Editor` | Editor tools, data validators | All (editor only) |
 | `SLA.Tests` | `SLA.Tests` | Edit-mode and play-mode tests | All |
 
 ## Scenes and loading
 
-- **Bootstrap** is loaded the whole session: the XR Origin rig, `GameStateManager`, services, audio.
+- **Bootstrap** is loaded the whole session: the `PlayerRig` (the XR Origin, see [Player rig](#player-rig)), `GameStateManager`, services, audio.
 - **Hub_MR / Hub_Virtual / Gate_\* / Penalty_Desert** load **additively** with a fade to black around each load.
 - Each gate scene is self-contained: its own lightmaps, NavMesh and spawners.
 
 ![Screen flow](images/screen-flow.png)
+
+## Player rig
+
+One prefab, `Prefabs/Player/PlayerRig.prefab`, used by Bootstrap and every `Sandbox_<Name>` (sandboxes have no Bootstrap, so there the rig runs alone on the default Recommended preset). `PlayerRigSetup` (**Tools → SLA → Set Up Player Rig**) builds it from the XRI Starter Assets rig and places it; don't edit its parts by hand. Code: `SLA.Player`.
+
+- **Origin:** floor tracking origin, tag `Player`, a CharacterController that slides along walls (CMF-4) with a 0.05 m step offset, gravity off for now (flat floors only, CMF-3), no jump, climb, grab-move or eye gaze. It carries the disabled `ARPlaneManager` and `ARCameraManager` that `Hub_MR` turns on (MRH-1).
+- **Locomotion:** `QuantizedMoveProvider` (stopped, walk or sprint; CMF-2), snap and smooth turn (only one on), teleport, and the XRI Tunneling Vignette on the camera for stick movement and turning.
+- **Settings:** `ComfortSettings` applies `GameSession.Data.settings` (`comfortPreset`, `leftHanded`) to the providers and to the Starter Assets' two `ControllerInputActionManager`s, which decide which stick moves and which turns and teleports (CMF-8). It reapplies whenever `OnSettingsChanged` is raised; settings screens write the settings and raise the channel, never touching the rig. An unknown or empty preset name means Recommended.
+- **Locks:** while a scene with a `StickLocomotionLock` is loaded (`Hub_MR` for MRH-13; `Title` and `Setup`, which have no floor), stick movement, turning, teleport and the vignette are off.
+- **Teleport targets:** a `NavMeshTeleportationArea` on a scene's floor root (floors on the `Environment` layer; XRI interaction layer 31, `Teleport`) accepts only points on that scene's baked NavMesh. Sandboxes, `Hub_Virtual` and the gates have one.
+- **Fades:** the rig's `ScreenFader` (a sphere on the camera) shows the darker of the scene-load fade from Bootstrap's `SceneLoader` and the teleport fade from `TeleportFade`.
 
 ## Game states
 
@@ -126,6 +138,8 @@ public class LevelUpToast : MonoBehaviour
 ```
 
 Planned channels: `OnEnemyKilled`, `OnDamageTaken`, `OnLevelUp`, `OnRankUp`, `OnQuestUpdated`, `OnQuestCompleted`, `OnGateCleared`, `OnSkillUsed`, `OnRepCounted`, `OnGameStateChanged`.
+
+`OnSettingsChanged` (void) is raised once the save has loaded (`GameBootstrapper`) and whenever something changes `GameSession.Data.settings` or the calibrated standing height; the player rig and eye-level menus listen.
 
 ## Data assets
 
